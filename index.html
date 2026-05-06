@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 CamBusiness Dashboard Pro</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0a0a1a; color: #fff; min-height: 100vh; }
+
+/* HEADER */
+.header { background: linear-gradient(135deg, #1a1a2e, #16213e); padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00d4ff33; position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+.logo { font-size: 1.4rem; font-weight: bold; color: #00d4ff; display: flex; align-items: center; gap: 10px; }
+.logo span { color: #fff; }
+.header-right { display: flex; gap: 20px; align-items: center; }
+.time-display { color: #8892b0; font-family: monospace; font-size: 0.9rem; }
+.status-badge { background: rgba(0,255,136,0.15); color: #00ff88; padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; display: flex; align-items: center; gap: 8px; }
+.dot { width: 8px; height: 8px; background: #00ff88; border-radius: 50%; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.5;} }
+
+/* NAV */
+.nav-tabs { background: #13132a; display: flex; gap: 5px; padding: 10px 30px; border-bottom: 1px solid #0f3460; overflow-x: auto; }
+.nav-tab { padding: 8px 20px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; color: #8892b0; transition: all 0.3s; white-space: nowrap; border: none; background: none; display: flex; align-items: center; gap: 8px; }
+.nav-tab:hover { background: rgba(0,212,255,0.1); color: #00d4ff; }
+.nav-tab.active { background: rgba(0,212,255,0.15); color: #00d4ff; border: 1px solid rgba(0,212,255,0.3); }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 25px 20px; }
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.4s; }
+@keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+
+/* CARDS */
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
+.card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; padding: 18px; border: 1px solid #0f3460; display: flex; align-items: center; gap: 15px; transition: transform 0.3s; }
+.card:hover { transform: translateY(-3px); border-color: #00d4ff66; }
+.card-icon { width: 50px; height: 50px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+.card-icon.blue{background:rgba(54,162,235,0.2);color:#36a2eb;}
+.card-icon.green{background:rgba(0,255,136,0.2);color:#00ff88;}
+.card-icon.orange{background:rgba(255,165,0,0.2);color:#ffa500;}
+.card-icon.red{background:rgba(255,99,132,0.2);color:#ff6384;}
+.card-icon.purple{background:rgba(153,102,255,0.2);color:#9966ff;}
+.card-icon.cyan{background:rgba(0,212,255,0.2);color:#00d4ff;}
+.card-info h3 { font-size: 1.6rem; font-weight: bold; color: #00d4ff; }
+.card-info p { color: #8892b0; font-size: 0.8rem; margin: 4px 0; }
+.badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; font-weight: bold; }
+.badge.green{background:rgba(0,255,136,0.15);color:#00ff88;}
+.badge.red{background:rgba(255,99,132,0.15);color:#ff6384;}
+.badge.orange{background:rgba(255,165,0,0.15);color:#ffa500;}
+.badge.blue{background:rgba(54,162,235,0.15);color:#36a2eb;}
+
+/* CHARTS */
+.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.chart-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; padding: 20px; border: 1px solid #0f3460; }
+.chart-card.full { grid-column: 1/-1; margin-bottom: 20px; }
+.chart-card h2 { font-size: 0.95rem; color: #00d4ff; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+.chart-container { position: relative; height: 280px; }
+
+/* SECTION HEADER + BOUTONS */
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
+.section-header h2 { font-size: 1rem; color: #00d4ff; display: flex; align-items: center; gap: 8px; }
+.btn { border: none; padding: 9px 18px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.3s; display: inline-flex; align-items: center; gap: 8px; }
+.btn-primary { background: linear-gradient(135deg, #00d4ff, #0095ff); color: #000; }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,212,255,0.4); }
+.btn-success { background: linear-gradient(135deg, #00ff88, #00b85f); color: #000; }
+.btn-success:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,255,136,0.4); }
+.btn-danger { background: rgba(255,99,132,0.15); color: #ff6384; border: 1px solid rgba(255,99,132,0.3); }
+.btn-danger:hover { background: rgba(255,99,132,0.3); }
+.btn-warning { background: rgba(255,165,0,0.15); color: #ffa500; border: 1px solid rgba(255,165,0,0.3); }
+.btn-warning:hover { background: rgba(255,165,0,0.3); }
+.btn-secondary { background: rgba(136,146,176,0.15); color: #8892b0; border: 1px solid rgba(136,146,176,0.3); }
+.btn-secondary:hover { background: rgba(136,146,176,0.3); color: #fff; }
+
+/* ALERTES */
+.alerts-section, .data-section { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; padding: 20px; border: 1px solid #0f3460; margin-bottom: 20px; }
+.alert-item { display: flex; align-items: center; gap: 12px; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; border-left: 3px solid; animation: slideIn 0.3s; }
+@keyframes slideIn { from{opacity:0;transform:translateX(-10px);} to{opacity:1;transform:translateX(0);} }
+.alert-item.HIGH{border-color:#ff6384;background:rgba(255,99,132,0.08);}
+.alert-item.MEDIUM{border-color:#ffa500;background:rgba(255,165,0,0.08);}
+.alert-item.CRITICAL{border-color:#ff0000;background:rgba(255,0,0,0.12);animation:blink 1.5s infinite;}
+.alert-item.LOW{border-color:#36a2eb;background:rgba(54,162,235,0.08);}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+.alert-time { color: #8892b0; font-size: 0.75rem; }
+.alert-message { flex: 1; font-size: 0.85rem; }
+.no-alerts { text-align: center; color: #00ff88; padding: 20px; }
+
+/* TABLE PRODUITS */
+.products-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+.products-table th { background: #13132a; color: #00d4ff; padding: 12px; text-align: left; font-size: 0.85rem; border-bottom: 2px solid #00d4ff33; }
+.products-table td { padding: 12px; border-bottom: 1px solid #0f3460; font-size: 0.85rem; }
+.products-table tr:hover { background: rgba(0,212,255,0.05); }
+.actions-cell { display: flex; gap: 5px; }
+.btn-icon { width: 32px; height: 32px; border-radius: 6px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all 0.3s; }
+.btn-icon.edit { background: rgba(54,162,235,0.15); color: #36a2eb; }
+.btn-icon.edit:hover { background: rgba(54,162,235,0.3); }
+.btn-icon.delete { background: rgba(255,99,132,0.15); color: #ff6384; }
+.btn-icon.delete:hover { background: rgba(255,99,132,0.3); }
+.empty-state { text-align: center; padding: 40px; color: #8892b0; }
+.empty-state i { font-size: 3rem; color: #0f3460; margin-bottom: 15px; }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.8); z-index: 9998; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(5px); }
+.modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+.modal { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 15px; border: 1px solid #00d4ff44; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalIn 0.3s; }
+@keyframes modalIn { from{opacity:0;transform:scale(0.9);} to{opacity:1;transform:scale(1);} }
+.modal-header { padding: 20px; border-bottom: 1px solid #0f3460; display: flex; justify-content: space-between; align-items: center; }
+.modal-header h2 { color: #00d4ff; font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+.modal-close { background: none; border: none; color: #8892b0; font-size: 1.3rem; cursor: pointer; transition: color 0.3s; }
+.modal-close:hover { color: #ff6384; }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 15px 20px; border-top: 1px solid #0f3460; display: flex; gap: 10px; justify-content: flex-end; }
+
+/* FORMS */
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; color: #8892b0; font-size: 0.8rem; margin-bottom: 6px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; background: #0a0a1a; border: 1px solid #0f3460; color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.9rem; transition: border-color 0.3s; font-family: inherit; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #00d4ff; outline: none; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* CAMERA */
+.camera-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+.camera-feed { background: #000; border-radius: 10px; overflow: hidden; aspect-ratio: 16/9; position: relative; border: 1px solid #0f3460; }
+.camera-canvas { width: 100%; height: 100%; }
+.camera-label { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #00ff88; padding: 3px 10px; border-radius: 5px; font-size: 0.75rem; font-family: monospace; }
+.camera-rec { position: absolute; top: 10px; right: 10px; display: flex; align-items: center; gap: 5px; background: rgba(0,0,0,0.7); padding: 3px 10px; border-radius: 5px; font-size: 0.7rem; }
+.rec-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff0000; animation: pulse 1s infinite; }
+.camera-count { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: #00d4ff; padding: 4px 10px; border-radius: 5px; font-size: 0.8rem; }
+
+/* SETTINGS */
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; }
+.settings-card { background: linear-gradient(135deg, #1a1a2e, #16213e); border-radius: 12px; padding: 20px; border: 1px solid #0f3460; }
+.settings-card h2 { color: #00d4ff; font-size: 1rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+.toggle-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #0f346044; }
+.toggle { width: 40px; height: 22px; background: #0f3460; border-radius: 11px; position: relative; cursor: pointer; transition: background 0.3s; }
+.toggle.on { background: #00d4ff; }
+.toggle::after { content:''; position: absolute; width:18px; height:18px; background:#fff; border-radius:50%; top:2px; left:2px; transition: transform 0.3s; }
+.toggle.on::after { transform: translateX(18px); }
+
+/* TOAST */
+.toast-container { position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+.toast { background: #1a1a2e; border: 1px solid #00d4ff44; border-radius: 10px; padding: 12px 20px; min-width: 280px; display: flex; align-items: center; gap: 12px; animation: toastIn 0.3s; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+@keyframes toastIn { from{opacity:0;transform:translateX(50px);} to{opacity:1;transform:translateX(0);} }
+.toast.success { border-color: #00ff88; }
+.toast.error { border-color: #ff6384; }
+.toast-close { cursor: pointer; color: #8892b0; }
+
+@media (max-width: 768px) {
+  .form-row { grid-template-columns: 1fr; }
+  .charts-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<header class="header">
+  <div class="logo"><i class="fas fa-camera-retro"></i> Cam<span>Business</span></div>
+  <div class="header-right">
+    <div class="time-display" id="clockDisplay">00:00:00</div>
+    <div class="status-badge"><div class="dot"></div> Système actif</div>
+  </div>
+</header>
+
+<nav class="nav-tabs">
+  <button class="nav-tab active" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+  <button class="nav-tab" data-page="cameras"><i class="fas fa-video"></i> Caméras</button>
+  <button class="nav-tab" data-page="products"><i class="fas fa-box"></i> Produits</button>
+  <button class="nav-tab" data-page="alerts"><i class="fas fa-bell"></i> Alertes <span class="badge red" id="alertBadge">0</span></button>
+  <button class="nav-tab" data-page="analytics"><i class="fas fa-chart-bar"></i> Analytics</button>
+  <button class="nav-tab" data-page="settings"><i class="fas fa-cog"></i> Paramètres</button>
+</nav>
+
+<!-- DASHBOARD -->
+<div class="page active" id="page-dashboard">
+<div class="container">
+  <div class="cards-grid">
+    <div class="card"><div class="card-icon blue"><i class="fas fa-users"></i></div><div class="card-info"><h3 id="totalVisitors">0</h3><p>Visiteurs aujourd'hui</p><span class="badge green">+12%</span></div></div>
+    <div class="card"><div class="card-icon green"><i class="fas fa-walking"></i></div><div class="card-info"><h3 id="currentPeople">0</h3><p>Personnes actuelles</p><span class="badge blue">Live</span></div></div>
+    <div class="card"><div class="card-icon orange"><i class="fas fa-bell"></i></div><div class="card-info"><h3 id="totalAlerts">0</h3><p>Alertes du jour</p><span class="badge orange">À vérifier</span></div></div>
+    <div class="card"><div class="card-icon purple"><i class="fas fa-box"></i></div><div class="card-info"><h3 id="totalProducts">0</h3><p>Produits en stock</p><span class="badge blue">Total</span></div></div>
+    <div class="card"><div class="card-icon cyan"><i class="fas fa-chart-line"></i></div><div class="card-info"><h3 id="avgPerHour">0</h3><p>Moyenne / heure</p><span class="badge blue">Aujourd'hui</span></div></div>
+  </div>
+
+  <div class="section-header">
+    <h2><i class="fas fa-bolt"></i> Actions rapides</h2>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:25px;">
+    <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Ajouter un produit</button>
+    <button class="btn btn-success" onclick="generateReport()"><i class="fas fa-file-download"></i> Générer rapport</button>
+    <button class="btn btn-warning" onclick="generateRandomAlert()"><i class="fas fa-bell"></i> Tester alerte</button>
+    <button class="btn btn-secondary" onclick="exportData()"><i class="fas fa-download"></i> Exporter données</button>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card"><h2><i class="fas fa-chart-bar"></i> Visiteurs par heure</h2><div class="chart-container"><canvas id="hourlyChart"></canvas></div></div>
+    <div class="chart-card"><h2><i class="fas fa-chart-pie"></i> Zones fréquentées</h2><div class="chart-container"><canvas id="zoneChart"></canvas></div></div>
+  </div>
+
+  <div class="alerts-section">
+    <div class="section-header">
+      <h2><i class="fas fa-exclamation-triangle"></i> Alertes récentes</h2>
+      <button class="btn btn-danger" onclick="clearAlerts()"><i class="fas fa-trash"></i> Effacer</button>
+    </div>
+    <div id="alertsList"><p class="no-alerts"><i class="fas fa-check-circle"></i> Aucune alerte</p></div>
+  </div>
+</div>
+</div>
+
+<!-- CAMERAS -->
+<div class="page" id="page-cameras">
+<div class="container">
+  <div class="data-section">
+    <div class="section-header">
+      <h2><i class="fas fa-video"></i> Flux caméras en direct</h2>
+      <button class="btn btn-primary" onclick="openCameraModal()"><i class="fas fa-plus"></i> Ajouter caméra</button>
+    </div>
+    <div class="camera-grid" id="cameraGrid"></div>
+  </div>
+</div>
+</div>
+
+<!-- PRODUITS -->
+<div class="page" id="page-products">
+<div class="container">
+  <div class="data-section">
+    <div class="section-header">
+      <h2><i class="fas fa-box"></i> Gestion des produits</h2>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-secondary" onclick="exportProducts()"><i class="fas fa-download"></i> Exporter</button>
+        <button class="btn btn-primary" onclick="openProductModal()"><i class="fas fa-plus"></i> Nouveau produit</button>
+      </div>
+    </div>
+    <div id="productsContainer"></div>
+  </div>
+</div>
+</div>
+
+<!-- ALERTES -->
+<div class="page" id="page-alerts">
+<div class="container">
+  <div class="data-section">
+    <div class="section-header">
+      <h2><i class="fas fa-bell"></i> Toutes les alertes</h2>
+      <button class="btn btn-danger" onclick="clearAlerts()"><i class="fas fa-trash"></i> Tout effacer</button>
+    </div>
+    <div id="allAlertsList"></div>
+  </div>
+</div>
+</div>
+
+<!-- ANALYTICS -->
+<div class="page" id="page-analytics">
+<div class="container">
+  <div class="chart-card full">
+    <h2><i class="fas fa-calendar-week"></i> Visiteurs cette semaine</h2>
+    <div class="chart-container"><canvas id="weeklyChart"></canvas></div>
+  </div>
+  <div class="data-section">
+    <div class="section-header"><h2><i class="fas fa-file-alt"></i> Rapport automatique</h2>
+      <button class="btn btn-success" onclick="generateReport()"><i class="fas fa-download"></i> Générer</button>
+    </div>
+    <div id="reportText" style="font-family:monospace;font-size:0.85rem;color:#00ff88;background:#000;padding:15px;border-radius:8px;white-space:pre-wrap;min-height:150px;">Cliquez sur "Générer" pour créer un rapport...</div>
+  </div>
+</div>
+</div>
+
+<!-- SETTINGS -->
+<div class="page" id="page-settings">
+<div class="container">
+  <div class="settings-grid">
+    <div class="settings-card">
+      <h2><i class="fas fa-store"></i> Informations magasin</h2>
+      <div class="form-group"><label>Nom du magasin</label><input type="text" id="shopName" value="Mon Magasin"></div>
+      <div class="form-group"><label>Adresse</label><input type="text" id="shopAddress" value=""></div>
+      <div class="form-group"><label>Horaires d'ouverture</label>
+        <div class="form-row">
+          <input type="time" id="openTime" value="09:00">
+          <input type="time" id="closeTime" value="19:00">
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;" onclick="saveSettings()"><i class="fas fa-save"></i> Sauvegarder</button>
+    </div>
+
+    <div class="settings-card">
+      <h2><i class="fas fa-bell"></i> Notifications</h2>
+      <div class="toggle-row"><span>Alertes file d'attente</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span>Détection comportements suspects</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span>Hors horaires</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+      <div class="toggle-row"><span>Notifications par email</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    </div>
+
+    <div class="settings-card">
+      <h2><i class="fas fa-crown"></i> Plan PRO</h2>
+      <div style="text-align:center;padding:15px 0;">
+        <div style="font-size:2.5rem;color:#00d4ff;"><i class="fas fa-star"></i></div>
+        <h3 style="color:#00d4ff;">149€ / mois</h3>
+        <p style="color:#8892b0;margin:10px 0;font-size:0.85rem;">✅ Caméras illimitées<br>✅ Analytics avancées<br>✅ Alertes temps réel<br>✅ Support prioritaire</p>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- MODAL PRODUIT -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fas fa-box"></i> <span id="productModalTitle">Ajouter un produit</span></h2>
+      <button class="modal-close" onclick="closeModal('productModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="productId">
+      <div class="form-group"><label>Nom du produit *</label><input type="text" id="productName" placeholder="Ex: T-shirt blanc" required></div>
+      <div class="form-row">
+        <div class="form-group"><label>Catégorie</label>
+          <select id="productCategory">
+            <option>Vêtements</option><option>Électronique</option><option>Alimentaire</option><option>Cosmétiques</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Code-barres</label><input type="text" id="productBarcode" placeholder="123456789"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Prix (€) *</label><input type="number" id="productPrice" step="0.01" min="0" placeholder="0.00" required></div>
+        <div class="form-group"><label>Stock *</label><input type="number" id="productStock" min="0" placeholder="0" required></div>
+      </div>
+      <div class="form-group"><label>Description</label><textarea id="productDesc" rows="3" placeholder="Description du produit..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('productModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveProduct()"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CAMERA -->
+<div class="modal-overlay" id="cameraModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2><i class="fas fa-video"></i> Ajouter une caméra</h2>
+      <button class="modal-close" onclick="closeModal('cameraModal')"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label>Nom de la caméra *</label><input type="text" id="camName" placeholder="Ex: CAM 05 - Stock"></div>
+      <div class="form-group"><label>Zone</label>
+        <select id="camZone"><option>Entrée</option><option>Caisse</option><option>Rayon A</option><option>Rayon B</option><option>Parking</option><option>Stock</option></select>
+      </div>
+      <div class="form-group"><label>URL/Source (RTSP, IP ou index webcam)</label><input type="text" id="camSource" placeholder="rtsp://192.168.1.10 ou 0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('cameraModal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveCamera()"><i class="fas fa-plus"></i> Ajouter</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============ DONNÉES ============
+let appData = {
+  totalVisitors: 0, currentPeople: 0, alerts: [],
+  hourlyData: new Array(24).fill(0),
+  zoneData: { "Entrée":0, "Caisse":0, "Rayon A":0, "Parking":0 },
+  products: [],
+  cameras: [
+    {id:1, name:"CAM 01 - ENTRÉE", zone:"Entrée", source:"0"},
+    {id:2, name:"CAM 02 - CAISSE", zone:"Caisse", source:"1"},
+    {id:3, name:"CAM 03 - RAYON A", zone:"Rayon A", source:"2"},
+    {id:4, name:"CAM 04 - PARKING", zone:"Parking", source:"3"}
+  ]
+};
+let charts = {};
+let editingProductId = null;
+
+// Charger depuis localStorage
+function loadData(){
+  const saved = localStorage.getItem('camBusinessData');
+  if(saved){ try{ Object.assign(appData, JSON.parse(saved)); }catch(e){} }
+}
+function saveData(){ localStorage.setItem('camBusinessData', JSON.stringify(appData)); }
+
+// ============ NAVIGATION ============
+document.querySelectorAll('.nav-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const page = tab.dataset.page;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('page-' + page).classList.add('active');
+    tab.classList.add('active');
+    if(page === 'cameras') renderCameras();
+    if(page === 'products') renderProducts();
+    if(page === 'alerts') renderAllAlerts();
+    if(page === 'analytics') initWeeklyChart();
+  });
+});
+
+// ============ HORLOGE ============
+function updateClock(){ document.getElementById('clockDisplay').textContent = new Date().toLocaleTimeString('fr-FR'); }
+setInterval(updateClock, 1000); updateClock();
+
+// ============ MODALES ============
+function openModal(id){ document.getElementById(id).classList.add('active'); }
+function closeModal(id){ document.getElementById(id).classList.remove('active'); }
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target === m) m.classList.remove('active'); });
+});
+
+// ============ PRODUITS ============
+function openProductModal(id = null){
+  editingProductId = id;
+  document.getElementById('productModalTitle').textContent = id ? 'Modifier le produit' : 'Ajouter un produit';
+  if(id){
+    const p = appData.products.find(x => x.id === id);
+    if(p){
+      document.getElementById('productName').value = p.name;
+      document.getElementById('productCategory').value = p.category;
+      document.getElementById('productBarcode').value = p.barcode || '';
+      document.getElementById('productPrice').value = p.price;
+      document.getElementById('productStock').value = p.stock;
+      document.getElementById('productDesc').value = p.description || '';
+    }
+  } else {
+    ['productName','productBarcode','productPrice','productStock','productDesc'].forEach(i => document.getElementById(i).value = '');
+  }
+  openModal('productModal');
+}
+
+function saveProduct(){
+  const name = document.getElementById('productName').value.trim();
+  const price = parseFloat(document.getElementById('productPrice').value);
+  const stock = parseInt(document.getElementById('productStock').value);
+  if(!name || isNaN(price) || isNaN(stock)){
+    showToast({severity:'error', type:'Erreur', msg:'Remplissez tous les champs obligatoires'});
+    return;
+  }
+  const product = {
+    id: editingProductId || Date.now(),
+    name,
+    category: document.getElementById('productCategory').value,
+    barcode: document.getElementById('productBarcode').value,
+    price, stock,
+    description: document.getElementById('productDesc').value,
+    createdAt: new Date().toISOString()
+  };
+  if(editingProductId){
+    const idx = appData.products.findIndex(p => p.id === editingProductId);
+    appData.products[idx] = product;
+    showToast({severity:'success', type:'Succès', msg:'Produit modifié'});
+  } else {
+    appData.products.push(product);
+    showToast({severity:'success', type:'Succès', msg:'Produit ajouté'});
+  }
+  saveData();
+  renderProducts();
+  updateDashboard();
+  closeModal('productModal');
+}
+
+function deleteProduct(id){
+  if(!confirm('Supprimer ce produit ?')) return;
+  appData.products = appData.products.filter(p => p.id !== id);
+  saveData();
+  renderProducts();
+  updateDashboard();
+  showToast({severity:'success', type:'Supprimé', msg:'Produit supprimé'});
+}
+
+function renderProducts(){
+  const c = document.getElementById('productsContainer');
+  if(appData.products.length === 0){
+    c.innerHTML = `<div class="empty-state"><i class="fas fa-box-open"></i><h3>Aucun produit</h3><p>Cliquez sur "Nouveau produit" pour commencer</p></div>`;
+    return;
+  }
+  let html = `<table class="products-table"><thead><tr><th>Nom</th><th>Catégorie</th><th>Prix</th><th>Stock</th><th>Actions</th></tr></thead><tbody>`;
+  appData.products.forEach(p => {
+    const stockColor = p.stock < 5 ? '#ff6384' : p.stock < 20 ? '#ffa500' : '#00ff88';
+    html += `<tr>
+      <td><strong>${p.name}</strong>${p.barcode ? `<br><small style="color:#8892b0;">${p.barcode}</small>` : ''}</td>
+      <td><span class="badge blue">${p.category}</span></td>
+      <td><strong>${p.price.toFixed(2)} €</strong></td>
+      <td style="color:${stockColor};font-weight:bold;">${p.stock}</td>
+      <td><div class="actions-cell">
+        <button class="btn-icon edit" onclick="openProductModal(${p.id})"><i class="fas fa-edit"></i></button>
+        <button class="btn-icon delete" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  c.innerHTML = html;
+}
+
+function exportProducts(){
+  if(appData.products.length === 0){ showToast({severity:'error',type:'Erreur',msg:'Aucun produit à exporter'}); return; }
+  let csv = 'Nom,Catégorie,Code-barres,Prix,Stock,Description\n';
+  appData.products.forEach(p => {
+    csv += `"${p.name}","${p.category}","${p.barcode||''}",${p.price},${p.stock},"${p.description||''}"\n`;
+  });
+  downloadFile(csv, 'produits.csv', 'text/csv');
+  showToast({severity:'success',type:'Export',msg:'Produits exportés'});
+}
+
+// ============ CAMÉRAS ============
+function openCameraModal(){
+  ['camName','camSource'].forEach(i => document.getElementById(i).value = '');
+  openModal('cameraModal');
+}
+
+function saveCamera(){
+  const name = document.getElementById('camName').value.trim();
+  if(!name){ showToast({severity:'error',type:'Erreur',msg:'Nom requis'}); return; }
+  appData.cameras.push({
+    id: Date.now(),
+    name,
+    zone: document.getElementById('camZone').value,
+    source: document.getElementById('camSource').value
+  });
+  saveData();
+  renderCameras();
+  closeModal('cameraModal');
+  showToast({severity:'success',type:'Succès',msg:'Caméra ajoutée'});
+}
+
+function deleteCamera(id){
+  if(!confirm('Supprimer cette caméra ?')) return;
+  appData.cameras = appData.cameras.filter(c => c.id !== id);
+  saveData();
+  renderCameras();
+}
+
+function renderCameras(){
+  const grid = document.getElementById('cameraGrid');
+  grid.innerHTML = '';
+  appData.cameras.forEach((cam, idx) => {
+    const div = document.createElement('div');
+    div.className = 'camera-feed';
+    div.innerHTML = `
+      <canvas class="camera-canvas" id="camCanvas${cam.id}" width="400" height="225"></canvas>
+      <div class="camera-label">${cam.name}</div>
+      <div class="camera-rec"><div class="rec-dot"></div><span>REC</span></div>
+      <div class="camera-count" id="camCount${cam.id}">👥 0 personne(s)</div>
+      <button class="btn-icon delete" style="position:absolute;bottom:10px;right:10px;" onclick="deleteCamera(${cam.id})"><i class="fas fa-trash"></i></button>
+    `;
+    grid.appendChild(div);
+    drawCamera(cam.id, idx);
+  });
+}
+
+function drawCamera(camId, idx){
+  const canvas = document.getElementById('camCanvas' + camId);
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#00d4ff','#00ff88','#ffa500','#ff6384','#9966ff'];
+  const color = colors[idx % colors.length];
+  
+  function draw(){
+    ctx.fillStyle = '#0a0a1a';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    // Grille
+    ctx.strokeStyle = color + '33';
+    ctx.lineWidth = 1;
+    for(let i=0;i<canvas.width;i+=40){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,canvas.height); ctx.stroke(); }
+    for(let i=0;i<canvas.height;i+=40){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(canvas.width,i); ctx.stroke(); }
+    // Personnes simulées
+    const count = Math.floor(Math.random()*5);
+    for(let i=0;i<count;i++){
+      const x = Math.random()*canvas.width;
+      const y = Math.random()*canvas.height;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x,y,8,0,Math.PI*2); ctx.fill();
+      ctx.fillRect(x-6,y+6,12,18);
+    }
+    const cc = document.getElementById('camCount'+camId);
+    if(cc) cc.textContent = `👥 ${count} personne(s)`;
+    // Timestamp
+    ctx.fillStyle = '#fff'; ctx.font = '11px monospace';
+    ctx.fillText(new Date().toLocaleTimeString('fr-FR'), 10, canvas.height-10);
+  }
+  draw();
+  setInterval(draw, 2000);
+}
+
+// ============ ALERTES ============
+function generateRandomAlert(){
+  const types = [
+    {type:"FILE_ATTENTE", msg:"⚠️ File d'attente longue à la caisse", severity:"MEDIUM"},
+    {type:"SUSPECT", msg:"🚨 Comportement suspect - Rayon A", severity:"HIGH"},
+    {type:"HORS_HORAIRES", msg:"🔴 Présence hors horaires!", severity:"CRITICAL"},
+    {type:"INFO", msg:"ℹ️ Heure de pointe détectée", severity:"LOW"}
+  ];
+  const a = types[Math.floor(Math.random()*types.length)];
+  const alertObj = {...a, timestamp: new Date().toLocaleTimeString('fr-FR'), id: Date.now()};
+  appData.alerts.unshift(alertObj);
+  if(appData.alerts.length > 50) appData.alerts.pop();
+  saveData();
+  showToast(alertObj);
+  renderAlerts();
+}
+
+function renderAlerts(){
+  const list = document.getElementById('alertsList');
+  if(appData.alerts.length === 0){
+    list.innerHTML = '<p class="no-alerts"><i class="fas fa-check-circle"></i> Aucune alerte</p>';
+  } else {
+    list.innerHTML = appData.alerts.slice(0,5).map(a => `
+      <div class="alert-item ${a.severity}">
+        <span class="alert-time">${a.timestamp}</span>
+        <span class="alert-message">${a.msg}</span>
+        <span class="badge ${a.severity==='CRITICAL'||a.severity==='HIGH'?'red':a.severity==='MEDIUM'?'orange':'blue'}">${a.severity}</span>
+      </div>
+    `).join('');
+  }
+  document.getElementById('alertBadge').textContent = appData.alerts.length;
+  document.getElementById('totalAlerts').textContent = appData.alerts.length;
+}
+
+function renderAllAlerts(){
+  const list = document.getElementById('allAlertsList');
+  if(appData.alerts.length === 0){
+    list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><h3>Aucune alerte</h3></div>';
+    return;
+  }
+  list.innerHTML = appData.alerts.map(a => `
+    <div class="alert-item ${a.severity}">
+      <span class="alert-time">${a.timestamp}</span>
+      <span class="alert-message">${a.msg}</span>
+      <span class="badge ${a.severity==='CRITICAL'||a.severity==='HIGH'?'red':a.severity==='MEDIUM'?'orange':'blue'}">${a.severity}</span>
+    </div>
+  `).join('');
+}
+
+function clearAlerts(){
+  if(!confirm('Effacer toutes les alertes ?')) return;
+  appData.alerts = [];
+  saveData();
+  renderAlerts();
+  renderAllAlerts();
+  showToast({severity:'success',type:'OK',msg:'Alertes effacées'});
+}
+
+// ============ TOAST ============
+function showToast(alert){
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  const cls = alert.severity === 'success' ? 'success' : alert.severity === 'error' ? 'error' : '';
+  t.className = 'toast ' + cls;
+  t.innerHTML = `
+    <i class="fas fa-${alert.severity==='success'?'check-circle':alert.severity==='error'?'times-circle':'bell'}" style="color:#00d4ff;"></i>
+    <div style="flex:1;"><strong>${alert.type}</strong><br><small>${alert.msg}</small></div>
+    <span class="toast-close" onclick="this.parentElement.remove()">✕</span>
+  `;
+  c.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(),300); }, 4000);
+}
+
+// ============ DASHBOARD ============
+function updateDashboard(){
+  document.getElementById('totalVisitors').textContent = appData.totalVisitors;
+  document.getElementById('currentPeople').textContent = appData.currentPeople;
+  document.getElementById('totalProducts').textContent = appData.products.length;
+  document.getElementById('avgPerHour').textContent = Math.floor(appData.totalVisitors/Math.max(1,new Date().getHours()));
+}
+
+// ============ SIMULATION ============
+function simulate(){
+  const newP = Math.floor(Math.random()*3);
+  appData.totalVisitors += newP;
+  appData.currentPeople = Math.max(0, appData.currentPeople + newP - Math.floor(Math.random()*2));
+  const h = new Date().getHours();
+  appData.hourlyData[h] += newP;
+  const zones = Object.keys(appData.zoneData);
+  appData.zoneData[zones[Math.floor(Math.random()*zones.length)]] += newP;
+  updateDashboard();
+  if(charts.hourly){ charts.hourly.data.datasets[0].data = appData.hourlyData; charts.hourly.update('none'); }
+  if(charts.zone){ charts.zone.data.datasets[0].data = Object.values(appData.zoneData); charts.zone.update('none'); }
+  if(Math.random() < 0.1) generateRandomAlert();
+}
+
+// ============ CHAR
